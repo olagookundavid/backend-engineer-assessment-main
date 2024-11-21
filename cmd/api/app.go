@@ -3,15 +3,16 @@ package api
 import (
 	"sync"
 
+	"github.com/masena-dev/bookstore-api/internal/handlers"
 	"github.com/masena-dev/bookstore-api/internal/jsonlog"
 	// "github.com/masena-dev/bookstore-api/internal/services"
 )
 
 type Application struct {
-	// Services services.Services
-	Config Config
-	Logger *jsonlog.Logger
-	Wg     sync.WaitGroup
+	Handlers handlers.Handlers
+	Config   Config
+	Logger   *jsonlog.Logger
+	Wg       sync.WaitGroup
 }
 
 type Config struct {

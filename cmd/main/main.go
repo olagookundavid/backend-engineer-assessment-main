@@ -9,14 +9,15 @@ goose postgres postgres://itojudb:itojudb@localhost/itojudb up
 package main
 
 import (
+	"context"
 	"os"
 	"sync"
 
 	_ "github.com/lib/pq"
 	"github.com/masena-dev/bookstore-api/cmd/api"
+	"github.com/masena-dev/bookstore-api/internal/db"
+	"github.com/masena-dev/bookstore-api/internal/handlers"
 	"github.com/masena-dev/bookstore-api/internal/jsonlog"
-
-	// "github.com/masena-dev/bookstore-api/internal/models"
 	"github.com/masena-dev/bookstore-api/internal/server"
 )
 
@@ -26,22 +27,24 @@ func main() {
 	displayVersion("version")
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
-	db, err := openDB(*cfg)
+
+	ctx := context.Background()
+
+	pool, err := openDB(*cfg, ctx)
 	if err != nil {
 		logger.PrintFatal(err, nil)
 	}
+	defer pool.Close()
+
 	logger.PrintInfo("database connection pool established", nil)
 
-	defer db.Close()
-
-	expvarSetup(db)
+	expvarSetup()
 
 	app := &api.Application{
-		Wg:     sync.WaitGroup{},
-		Config: *cfg,
-		Logger: logger,
-		//TODO
-		// Models: models.NewModels(db),
+		Wg:       sync.WaitGroup{},
+		Config:   *cfg,
+		Logger:   logger,
+		Handlers: handlers.NewHandlers(db.New(pool)),
 	}
 
 	err = server.Serve(app)

@@ -13,7 +13,7 @@ import (
 
 	"github.com/masena-dev/bookstore-api/cmd/api"
 	"github.com/masena-dev/bookstore-api/internal/jsonlog"
-	// "github.com/olagookundavid/itoju/internal/routes"
+	"github.com/masena-dev/bookstore-api/internal/routes"
 )
 
 func Serve(app *api.Application) error {
@@ -21,7 +21,7 @@ func Serve(app *api.Application) error {
 	srv := &http.Server{
 		Addr: fmt.Sprintf(":%d", app.Config.Port),
 		//TODO
-		// Handler:      routes.Routes(app),
+		Handler:      routes.Routes(app),
 		ErrorLog:     log.New(logger, "", 0),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,

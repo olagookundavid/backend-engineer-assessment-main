@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"expvar"
 	"flag"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/masena-dev/bookstore-api/cmd/api"
 	"github.com/masena-dev/bookstore-api/internal/vcs"
@@ -29,13 +29,10 @@ func loadDbUrl() string {
 	return dbUrl
 }
 
-func expvarSetup(db *sql.DB) {
+func expvarSetup() {
 	expvar.NewString("version").Set(version)
 	expvar.Publish("goroutines", expvar.Func(func() any {
 		return runtime.NumGoroutine()
-	}))
-	expvar.Publish("database", expvar.Func(func() any {
-		return db.Stats()
 	}))
 	expvar.Publish("timestamp", expvar.Func(func() any {
 		return time.Now().Unix()
@@ -51,27 +48,12 @@ func displayVersion(flagStr string) {
 	}
 }
 
-func openDB(cfg api.Config) (*sql.DB, error) {
-	db, err := sql.Open("postgres", cfg.Db.Dsn)
+func openDB(cfg api.Config, ctx context.Context) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(ctx, cfg.Db.Dsn)
 	if err != nil {
 		return nil, err
 	}
-	// Setting no default connections
-	// db.SetMaxOpenConns(cfg.Db.MaxOpenConns)
-	// db.SetMaxIdleConns(cfg.Db.MaxIdleConns)
-	// duration, err := time.ParseDuration(cfg.Db.MaxIdleTime)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// db.SetConnMaxIdleTime(duration)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return db, nil
+	return pool, nil
 }
 
 func flagSetup(dbUrl string) *api.Config {
@@ -79,9 +61,9 @@ func flagSetup(dbUrl string) *api.Config {
 	var cfg api.Config
 
 	//env and port
-	flag.IntVar(&cfg.Port, "port", 8000, "API server port")
+	flag.IntVar(&cfg.Port, "port", 8080, "API server port")
 	flag.StringVar(&cfg.Env, "env", "development", "Environment (development|staging|production)")
-	//db
+	//db and settings
 	flag.StringVar(&cfg.Db.Dsn, "db-dsn", dbUrl, "PostgreSQL DSN")
 	flag.IntVar(&cfg.Db.MaxOpenConns, "db-max-open-conns", 15, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.Db.MaxIdleConns, "db-max-idle-conns", 12, "PostgreSQL max idle connections")

@@ -34,9 +34,9 @@ migrate-down:
 
 # Run the application
 run:
-	DATABASE_URL="postgres://bookstore:bookstore@localhost:5432/bookstore?sslmode=disable" \
+	DB_URL="postgres://bookstore:bookstore@localhost:5432/bookstore?sslmode=disable" \
 	PORT=8080 \
-	go run ./cmd/api
+	go run ./cmd/main
 
 # Initialize everything and run the app
 init: setup docker-up migrate-up run
