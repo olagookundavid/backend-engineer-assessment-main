@@ -1,13 +1,14 @@
-package api
+package apis
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/jackc/pgx/v5"
-	"github.com/masena-dev/bookstore-api/internal/db"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/masena-dev/bookstore-api/internal/db"
 )
 
 type Server struct {

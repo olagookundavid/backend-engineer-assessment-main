@@ -1,19 +1,20 @@
-package main
+package api
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kelseyhightower/envconfig"
-	"github.com/masena-dev/bookstore-api/internal/api"
-	"github.com/masena-dev/bookstore-api/internal/db"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/masena-dev/bookstore-api/internal/apis"
+	"github.com/masena-dev/bookstore-api/internal/db"
 )
 
 // Config holds the configuration settings for the application.
@@ -28,6 +29,7 @@ func main() {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 
+	//logger
 	loggerOpts := &slog.HandlerOptions{
 		Level:     slog.LevelInfo,
 		AddSource: true,
@@ -45,7 +47,7 @@ func main() {
 
 	defer pool.Close()
 
-	srv := api.NewServer(logger, db.New(pool))
+	srv := apis.NewServer(logger, db.New(pool))
 
 	if err = serve(cfg, logger, srv); err != nil {
 		logger.Error("error starting server", "error", err)
@@ -64,7 +66,7 @@ func loadConfig() (config, error) {
 }
 
 // serve starts the HTTP server and handles graceful shutdown.
-func serve(cfg config, logger *slog.Logger, srv *api.Server) error {
+func serve(cfg config, logger *slog.Logger, srv *apis.Server) error {
 	handler := srv.NewRouter()
 
 	httpServer := &http.Server{
