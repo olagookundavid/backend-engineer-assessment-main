@@ -72,10 +72,10 @@ type CreateBookRequest struct {
 }
 
 type UpdateBookRequest struct {
-	Title         string   `json:"title,omitempty"`
-	Description   string   `json:"description,omitempty"`
+	Title         *string  `json:"title,omitempty"`
+	Description   *string  `json:"description,omitempty"`
 	Price         *float64 `json:"price,omitempty"`
-	PublishedDate string   `json:"published_date,omitempty"` // Format: YYYY-MM-DD
+	PublishedDate *string  `json:"published_date,omitempty"` // Format: YYYY-MM-DD
 }
 
 // Validation methods
@@ -100,7 +100,7 @@ func (r CreateBookRequest) Validate() error {
 }
 
 func (r UpdateBookRequest) Validate() error {
-	if r.Title != "" && len(r.Title) > 255 {
+	if *r.Title != "" && len(*r.Title) > 255 {
 		return ValidationError{Field: "title", Message: "must be between 1 and 255 characters"}
 	}
 
@@ -108,7 +108,7 @@ func (r UpdateBookRequest) Validate() error {
 		return ValidationError{Field: "price", Message: "must be greater than or equal to 0"}
 	}
 
-	if r.PublishedDate != "" && !isValidDate(r.PublishedDate) {
+	if *r.PublishedDate != "" && !isValidDate(*r.PublishedDate) {
 		return ValidationError{Field: "published_date", Message: "must be in YYYY-MM-DD format"}
 	}
 

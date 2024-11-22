@@ -159,6 +159,18 @@ func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	}
 }
 
+func BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+func RecordAlreadyExistsResponse(w http.ResponseWriter, r *http.Request) {
+	message := "could't create, record already exists"
+	errorResponse(w, r, http.StatusConflict, message)
+}
+func NotFoundResponseWithMsg(w http.ResponseWriter, r *http.Request, msg string) {
+	errorResponse(w, r, http.StatusNotFound, msg)
+}
+
 //////
 
 //For flexible update querys

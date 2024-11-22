@@ -5,7 +5,6 @@ import (
 
 	"github.com/masena-dev/bookstore-api/internal/handlers"
 	"github.com/masena-dev/bookstore-api/internal/jsonlog"
-	// "github.com/masena-dev/bookstore-api/internal/services"
 )
 
 type Application struct {
