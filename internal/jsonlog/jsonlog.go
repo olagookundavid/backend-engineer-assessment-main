@@ -11,7 +11,6 @@ import (
 
 type Level int8
 
-// Initialize constants which represent a specific severity level. We use the iota // keyword as a shortcut to assign successive integer values to the constants.
 const (
 	LevelInfo Level = iota
 	LevelError

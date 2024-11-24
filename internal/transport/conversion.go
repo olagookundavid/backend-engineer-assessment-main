@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/masena-dev/bookstore-api/internal/apis"
 	"github.com/masena-dev/bookstore-api/internal/db"
 	"github.com/masena-dev/bookstore-api/internal/domain"
+	"github.com/masena-dev/bookstore-api/internal/types"
 )
 
-func ToCreateBookParams(req apis.CreateBookRequest) (db.CreateBookParams, error) {
+func ToCreateBookParams(req types.CreateBookRequest) (db.CreateBookParams, error) {
 
 	err := req.Validate()
 	if err != nil {
@@ -32,7 +32,7 @@ func ToCreateBookParams(req apis.CreateBookRequest) (db.CreateBookParams, error)
 	}, nil
 }
 
-func ToUpdateBookParams(req apis.UpdateBookRequest, Id int64) (db.UpdateBookParams, error) {
+func ToUpdateBookParams(req types.UpdateBookRequest, Id int64) (db.UpdateBookParams, error) {
 
 	err := req.Validate()
 	if err != nil {
@@ -124,8 +124,8 @@ func ConvertToDomainAuthors(rows []db.Author) []*domain.Author {
 	return authors
 }
 
-// ID:        author.ID,
-// 		Name:      author.Name,
-// 		Bio:       author.Bio.String,
-// 		CreatedAt: author.CreatedAt.Time,
-// 		UpdatedAt: author.UpdatedAt.Time,
+var ErrNoAuthorStatsFound = fmt.Errorf("no stats found for the given author")
+var ErrNoAuthorFound = fmt.Errorf("no author details found")
+
+var ErrNoBookFound = fmt.Errorf("no book found")
+var ErrBookExist = fmt.Errorf("Book isbn already exists")

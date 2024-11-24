@@ -19,7 +19,7 @@ func (app *Application) RecoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		defer func() {
-			// Use the builtin recover function to check if there has been a panic or not.
+			// Use the recover function to check if there has been a panic or not.
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
 				helpers.ServerErrorResponse(w, r, fmt.Errorf("%s", err))

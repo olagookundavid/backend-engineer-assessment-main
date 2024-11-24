@@ -12,16 +12,37 @@ import (
 )
 
 const createBook = `-- name: CreateBook :one
-INSERT INTO books (
-    title,
-    isbn,
-    description,
-    price,
-    author_id,
-    published_date
-) VALUES (
-             $1, $2, $3, $4, $5, $6
-         ) RETURNING id, title, isbn, description, price, author_id, published_date, created_at, updated_at
+WITH inserted_book AS (
+    INSERT INTO books (
+        title,
+        isbn,
+        description,
+        price,
+        author_id,
+        published_date
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6
+    )
+    RETURNING id, title, isbn, description, price, published_date, created_at, updated_at, author_id
+)
+SELECT
+    b.id,
+    b.title,
+    b.isbn,
+    b.description,
+    b.price,
+    b.published_date,
+    b.created_at,
+    b.updated_at,
+    a.id AS author_id,
+    a.name AS author_name,
+    a.bio AS author_bio,
+    a.created_at AS author_created_at,
+    a.updated_at AS author_updated_at
+FROM
+    inserted_book b
+JOIN
+    authors a ON a.id = b.author_id
 `
 
 type CreateBookParams struct {
@@ -33,7 +54,23 @@ type CreateBookParams struct {
 	PublishedDate pgtype.Date
 }
 
-func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
+type CreateBookRow struct {
+	ID              int64
+	Title           string
+	Isbn            string
+	Description     pgtype.Text
+	Price           pgtype.Numeric
+	PublishedDate   pgtype.Date
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	AuthorID        int64
+	AuthorName      string
+	AuthorBio       pgtype.Text
+	AuthorCreatedAt pgtype.Timestamptz
+	AuthorUpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (CreateBookRow, error) {
 	row := q.db.QueryRow(ctx, createBook,
 		arg.Title,
 		arg.Isbn,
@@ -42,17 +79,21 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		arg.AuthorID,
 		arg.PublishedDate,
 	)
-	var i Book
+	var i CreateBookRow
 	err := row.Scan(
 		&i.ID,
 		&i.Title,
 		&i.Isbn,
 		&i.Description,
 		&i.Price,
-		&i.AuthorID,
 		&i.PublishedDate,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.AuthorID,
+		&i.AuthorName,
+		&i.AuthorBio,
+		&i.AuthorCreatedAt,
+		&i.AuthorUpdatedAt,
 	)
 	return i, err
 }

@@ -137,7 +137,7 @@ func logError(r *http.Request, err error) {
 }
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	env := envelope{"error": message}
+	env := envelope{"message": message}
 	err := WriteJSON(w, status, env, nil)
 	if err != nil {
 		logError(r, err)
@@ -147,10 +147,11 @@ func errorResponse(w http.ResponseWriter, r *http.Request, status int, message a
 
 func ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	logError(r, err)
-	message := "the server encountered a problem and could not process your request"
+	message := "Internal server error"
 	env := envelope{
-		"error":    message,
-		"devError": err.Error(),
+		"message": message,
+		//optional stuff, i use it when it's a developer service i am building
+		// "devError": err.Error(),
 	}
 	err = WriteJSON(w, http.StatusInternalServerError, env, nil)
 	if err != nil {
@@ -163,32 +164,10 @@ func BadRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
-func RecordAlreadyExistsResponse(w http.ResponseWriter, r *http.Request) {
-	message := "could't create, record already exists"
-	errorResponse(w, r, http.StatusConflict, message)
+func RecordAlreadyExistsResponse(w http.ResponseWriter, r *http.Request, err error) {
+	// message := "could't create, record already exists"
+	errorResponse(w, r, http.StatusConflict, err.Error())
 }
 func NotFoundResponseWithMsg(w http.ResponseWriter, r *http.Request, msg string) {
 	errorResponse(w, r, http.StatusNotFound, msg)
 }
-
-//////
-
-//For flexible update querys
-
-// func  readString(qs url.Values, key string, defaultValue string) string {
-
-// 	s := qs.Get(key)
-// 	if s == "" {
-// 		return defaultValue
-// 	}
-// 	// Otherwise return the string.
-// 	return s
-// }
-
-// func  readCSV(qs url.Values, key string, defaultValue []string) []string {
-// 	csv := qs.Get(key)
-// 	if csv == "" {
-// 		return defaultValue
-// 	}
-// 	return strings.Split(csv, ",")
-// }

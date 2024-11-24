@@ -24,7 +24,6 @@ func NewHandlers(db *db.Queries) Handlers {
 	bookHandler := transport.NewBookHandler(bookService)
 
 	return Handlers{
-
 		AuthorsHandler: authorHandler,
 		BooksHandler:   bookHandler,
 	}

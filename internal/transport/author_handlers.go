@@ -5,6 +5,7 @@ import (
 
 	"github.com/masena-dev/bookstore-api/internal/helpers"
 	"github.com/masena-dev/bookstore-api/internal/services"
+	"github.com/masena-dev/bookstore-api/internal/types"
 )
 
 type AuthorHandler struct {
@@ -29,15 +30,20 @@ func (h *AuthorHandler) GetAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 	author, err := h.AuthorService.GetAuthor(r.Context(), id)
 	if err != nil {
+		if err == ErrNoAuthorFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved author details",
-		"data":    author}
+	data := types.AuthorResponse{
+		Message: "Retrieved author details",
+		Author:  author,
+	}
 
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
@@ -46,15 +52,20 @@ func (h *AuthorHandler) GetAuthor(w http.ResponseWriter, r *http.Request) {
 func (h *AuthorHandler) GetAllAuthors(w http.ResponseWriter, r *http.Request) {
 	authors, err := h.AuthorService.GetAllAuthors(r.Context())
 	if err != nil {
+		if err == ErrNoAuthorFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved all authors",
-		"data":    authors}
+	data := types.AuthorsResponse{
+		Message: "Retrieved all authors",
+		Authors: authors,
+	}
 
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
@@ -66,17 +77,22 @@ func (h *AuthorHandler) GetAuthorStats(w http.ResponseWriter, r *http.Request) {
 		helpers.NotFoundResponseWithMsg(w, r, err.Error())
 		return
 	}
-	author, err := h.AuthorService.GetAuthor(r.Context(), id)
+	authorStats, err := h.AuthorService.GetAuthorStats(r.Context(), id)
 	if err != nil {
+		if err == ErrNoAuthorStatsFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved author details",
-		"data":    author}
+	data := types.AuthorStatsResponse{
+		Message: "Retrieved author stats",
+		Author:  authorStats,
+	}
 
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}

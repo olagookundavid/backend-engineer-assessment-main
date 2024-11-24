@@ -1,0 +1,51 @@
+
+-- name: GetAuthorStats :one
+WITH book_counts_per_year AS (
+    SELECT
+        EXTRACT(YEAR FROM b.published_date) AS year,
+        COUNT(b.id) AS books_count
+    FROM
+        books b
+    WHERE
+        b.author_id = $1
+    GROUP BY
+        year
+),
+author_book_stats AS (
+    SELECT
+        COUNT(b.id) AS total_books,
+        AVG(b.price) AS average_book_price,
+        MIN(b.published_date)::TEXT AS earliest_publication,
+        MAX(b.published_date)::TEXT AS latest_publication
+    FROM
+        books b
+    WHERE
+        b.author_id = $1
+)
+SELECT
+    a.id AS author_id,
+    a.name AS author_name,
+    abs.total_books,
+    abs.average_book_price,
+    abs.earliest_publication,
+    abs.latest_publication,
+    SUM(b.price) AS total_revenue,
+    jsonb_object_agg(
+        bc.year::TEXT,
+        bc.books_count
+    ) AS books_by_year
+FROM
+    authors a
+LEFT JOIN
+    books b ON a.id = b.author_id
+LEFT JOIN
+    book_sales s ON b.id = s.book_id
+LEFT JOIN
+    book_counts_per_year bc ON bc.year = EXTRACT(YEAR FROM b.published_date)
+CROSS JOIN
+    author_book_stats abs
+WHERE
+    a.id = $1
+GROUP BY
+    a.id, a.name, abs.total_books, abs.average_book_price, abs.earliest_publication, abs.latest_publication;
+

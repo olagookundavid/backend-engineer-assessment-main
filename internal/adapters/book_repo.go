@@ -2,10 +2,10 @@ package adapters
 
 import (
 	"context"
+	"strings"
 
 	"github.com/masena-dev/bookstore-api/internal/db"
 	"github.com/masena-dev/bookstore-api/internal/domain"
-
 	"github.com/masena-dev/bookstore-api/internal/transport"
 )
 
@@ -21,6 +21,9 @@ func (r *SQLCBookRepository) CreateBook(ctx context.Context, arg db.CreateBookPa
 	book, err := r.Queries.CreateBook(ctx, arg)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return nil, transport.ErrBookExist
+		}
 		return nil, err
 	}
 	value, _ := book.Price.Float64Value()
@@ -34,17 +37,21 @@ func (r *SQLCBookRepository) CreateBook(ctx context.Context, arg db.CreateBookPa
 		PublishedDate: book.PublishedDate.Time.String(),
 		Price:         value.Float64,
 		Author: domain.Author{
-			ID: book.AuthorID,
-			// Name:      book.AuthorName,
-			// Bio:       book.AuthorBio.String,
-			// CreatedAt: book.AuthorCreatedAt.Time,
-			// UpdatedAt: book.AuthorUpdatedAt.Time,
+			ID:        book.AuthorID,
+			Name:      book.AuthorName,
+			Bio:       book.AuthorBio.String,
+			CreatedAt: book.AuthorCreatedAt.Time,
+			UpdatedAt: book.AuthorUpdatedAt.Time,
 		},
 	}, nil
 }
+
 func (r *SQLCBookRepository) GetBook(ctx context.Context, id int64) (*domain.Book, error) {
 	book, err := r.Queries.GetBook(ctx, id)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, transport.ErrNoBookFound
+		}
 		return nil, err
 	}
 	value, _ := book.Price.Float64Value()
@@ -70,6 +77,9 @@ func (r *SQLCBookRepository) UpdateBook(ctx context.Context, arg db.UpdateBookPa
 
 	book, err := r.Queries.UpdateBook(ctx, arg)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, transport.ErrNoBookFound
+		}
 		return nil, err
 	}
 
@@ -95,6 +105,9 @@ func (r *SQLCBookRepository) UpdateBook(ctx context.Context, arg db.UpdateBookPa
 func (r *SQLCBookRepository) DeleteBook(ctx context.Context, id int64) error {
 	err := r.Queries.DeleteBook(ctx, id)
 	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return transport.ErrNoBookFound
+		}
 		return err
 	}
 	return nil

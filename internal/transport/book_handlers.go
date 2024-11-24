@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/masena-dev/bookstore-api/internal/apis"
 	"github.com/masena-dev/bookstore-api/internal/helpers"
 	"github.com/masena-dev/bookstore-api/internal/services"
+	"github.com/masena-dev/bookstore-api/internal/types"
 )
 
 type BookHandler struct {
@@ -25,8 +25,6 @@ func NewBookHandler(service services.IBookService) *BookHandler {
 	return &BookHandler{BookService: service}
 }
 
-type envelope map[string]any
-
 func (h *BookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.ReadIDParam(r)
 	if err != nil {
@@ -35,15 +33,19 @@ func (h *BookHandler) GetBook(w http.ResponseWriter, r *http.Request) {
 	}
 	book, err := h.BookService.GetBook(r.Context(), id)
 	if err != nil {
+		if err == ErrNoBookFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved Book",
-		"data":    book}
-
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	data := types.GetBookResponse{
+		Message: "Retrieved book",
+		Book:    book,
+	}
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
@@ -56,18 +58,18 @@ func (h *BookHandler) GetAllBooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved all books",
-		"data":    books}
-
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	data := types.BooksResponse{
+		Message: "Retrieved all books",
+		Books:   books,
+	}
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
 }
 
 func (h *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
-	var req apis.CreateBookRequest
+	var req types.CreateBookRequest
 	err := helpers.ReadJSON(w, r, &req)
 	if err != nil {
 		helpers.BadRequestResponse(w, r, err)
@@ -82,15 +84,19 @@ func (h *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 
 	book, err := h.BookService.CreateBook(r.Context(), createBookParams)
 	if err != nil {
+		if err == ErrBookExist {
+			helpers.RecordAlreadyExistsResponse(w, r, err)
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Retrieved all books",
-		"data":    book}
+	data := types.CreateBookResponse{
+		Message: "Created book",
+		Book:    book}
 
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusCreated, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
@@ -110,7 +116,7 @@ func (h *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req apis.UpdateBookRequest
+	var req types.UpdateBookRequest
 	err = helpers.ReadJSON(w, r, &req)
 	if err != nil {
 		helpers.BadRequestResponse(w, r, err)
@@ -136,15 +142,19 @@ func (h *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	}
 	book, err = h.BookService.UpdateBook(r.Context(), updateBookParams)
 	if err != nil {
+		if err == ErrNoBookFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Updated book",
-		"data":    book}
+	data := types.UpdateBookResponse{
+		Message: "Updated book",
+		Book:    book}
 
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, data, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}
@@ -158,14 +168,15 @@ func (h *BookHandler) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.BookService.DeleteBook(r.Context(), id)
 	if err != nil {
+		if err == ErrNoBookFound {
+			helpers.NotFoundResponseWithMsg(w, r, err.Error())
+			return
+		}
 		helpers.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	env := envelope{
-		"message": "Deleted book"}
-
-	err = helpers.WriteJSON(w, http.StatusOK, env, nil)
+	err = helpers.WriteJSON(w, http.StatusNoContent, nil, nil)
 	if err != nil {
 		helpers.ServerErrorResponse(w, r, err)
 	}

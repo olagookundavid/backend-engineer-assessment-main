@@ -13,7 +13,7 @@ package api
 
 // 	"github.com/jackc/pgx/v5/pgxpool"
 // 	"github.com/kelseyhightower/envconfig"
-// 	"github.com/masena-dev/bookstore-api/internal/apis"
+// 	"github.com/masena-dev/bookstore-api/internal/types"
 // 	"github.com/masena-dev/bookstore-api/internal/db"
 // )
 
@@ -47,7 +47,7 @@ package api
 
 // 	defer pool.Close()
 
-// 	srv := apis.NewServer(logger, db.New(pool))
+// 	srv := types.NewServer(logger, db.New(pool))
 
 // 	if err = serve(cfg, logger, srv); err != nil {
 // 		logger.Error("error starting server", "error", err)
@@ -66,7 +66,7 @@ package api
 // }
 
 // // serve starts the HTTP server and handles graceful shutdown.
-// func serve(cfg config, logger *slog.Logger, srv *apis.Server) error {
+// func serve(cfg config, logger *slog.Logger, srv *types.Server) error {
 // 	handler := srv.NewRouter()
 
 // 	httpServer := &http.Server{
