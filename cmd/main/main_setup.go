@@ -22,8 +22,7 @@ var (
 
 func loadDbUrl() string {
 	godotenv.Load()
-	// dbUrl := os.Getenv("DB_URL")
-	dbUrl := "postgres://bookstore:bookstore@localhost:5432/bookstore?sslmode=disable"
+	dbUrl := os.Getenv("DB_URL")
 	if dbUrl == "" {
 		log.Fatal("DB_URL env variable missing")
 	}

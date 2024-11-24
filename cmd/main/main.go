@@ -1,11 +1,3 @@
-/*
-mkdir -p bin cmd/api internal migrations remote
-cmd/api/main.go
-
-cd internal/sql/migrations/
-goose postgres postgres://djjsagev:WG11sRXwe2q1C0I9-3XhTZywTnhbZQPJ@stampy.db.elephantsql.com/djjsagev up
-goose postgres postgres://itojudb:itojudb@localhost/itojudb up
-*/
 package main
 
 import (
@@ -50,7 +42,6 @@ func main() {
 	err = server.Serve(app)
 	if err != nil {
 		logger.PrintFatal(err, nil)
-
 	}
 
 }
