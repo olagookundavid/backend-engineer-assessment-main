@@ -5,7 +5,7 @@
 - `Go v1.23.3` was used
 - `Sqlc v1.27.0` was used
 
-## App Structure
+## App Notes
 - Used the Hexagon pattern/structure
 - Used middlewares to get app metrics(didn't add that of db for now), recover panic.
 - Also used a Rate limiter to gaurd against such attacks
@@ -25,7 +25,7 @@
 - Figured that since it's a test and you would run it out of the box
 
 ## SQLC
-- also using this widely in a long time,i usual enjoy writing that layer from scratch.
+- also using this widely in a long time,i usual writing that layer from scratch.
 
 ## Feedback
 - Please do provide feedback anyhow this goes, would be appreciated.
