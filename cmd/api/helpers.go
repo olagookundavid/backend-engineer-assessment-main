@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/masena-dev/bookstore-api/internal/types"
 	"github.com/masena-dev/bookstore-api/internal/vcs"
 )
 
+// Background function that also has a recover for dealing with panic
 func (app *Application) Background(fn func()) {
 	app.Wg.Add(1)
 	go func() {
@@ -46,9 +48,12 @@ func (app *Application) logError(r *http.Request, err error) {
 		"request_url":    r.URL.String()})
 }
 
-func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	env := envelope{"error": message}
-	err := writeJSON(w, status, env, nil)
+func (app *Application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
+	// env := envelope{"message": message}
+	msg := types.MesageResponse{
+		Message: message,
+	}
+	err := writeJSON(w, status, msg, nil)
 	if err != nil {
 		app.logError(r, err)
 		w.WriteHeader(http.StatusInternalServerError)
