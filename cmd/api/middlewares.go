@@ -14,6 +14,14 @@ import (
 	"github.com/masena-dev/bookstore-api/internal/helpers"
 )
 
+func (app *Application) Authentication(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		print("auth")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *Application) RecoverPanic(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
 
 	"github.com/masena-dev/bookstore-api/cmd/api"
 )
@@ -37,5 +38,9 @@ func Routes(app *api.Application) http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/api/v1/books/:id", bookHandler.DeleteBook)
 
 	//Middleware
-	return app.Metrics(app.RecoverPanic(app.RateLimit(router)))
+	// return app.Metrics(app.RecoverPanic(app.RateLimit(router)))
+	MiddlewareChain := alice.New(app.Metrics, app.RecoverPanic, app.RateLimit)
+	// auth := MiddlewareChain.Append(app.Authentication)
+
+	return MiddlewareChain.Then(router)
 }
